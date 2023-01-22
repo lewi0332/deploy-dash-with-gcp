@@ -3,6 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import os
+import plotly_theme_light
 
 
 # -------------------------- PYTHON FUNCTIONS ---------------------------- #
@@ -50,7 +51,7 @@ data_df['multiply_num'] = multiply_num_list
 
 dash_text = '''
 
-This is an example of a DSC dashboard.
+This is an example of a dashboard on App Engine.
 '''
 
 
