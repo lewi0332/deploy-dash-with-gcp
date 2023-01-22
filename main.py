@@ -4,7 +4,7 @@ import dash_html_components as html
 import pandas as pd
 import os
 import plotly_theme_light
-
+import plotly.graph_objects as go
 
 # -------------------------- PYTHON FUNCTIONS ---------------------------- #
 
@@ -81,7 +81,9 @@ app.layout = html.Div(children=[
 
     dcc.Graph(
         id='example-graph',
-        figure={
+        figure=go.Figure(
+        
+        {
             'data': [
                 {'x': data_df.index.values.tolist(), 'y': data_df['add_num'], 'type': 'bar', 'name': 'Add Numbers'},
                 {'x': data_df.index.values.tolist(), 'y': data_df['multiply_num'], 'type': 'bar', 'name': 'Multiply Numbers'},
@@ -89,7 +91,7 @@ app.layout = html.Div(children=[
             'layout': {
                 'title': 'Dash Data viz'
             }
-        }
+        })
     )
 ])
 
@@ -99,4 +101,4 @@ app.layout = html.Div(children=[
 
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=8080, debug=True, use_reloader=False)
+    app.run_server(host='0.0.0.0', port=8080, debug=True, use_reloader=True)
