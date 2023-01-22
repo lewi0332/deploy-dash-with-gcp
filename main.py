@@ -22,7 +22,7 @@ def build_banner():
         id='banner',
         className='banner',
         children=[
-            html.Img(src=app.get_asset_url('dsc-logo2.png')),
+            html.Img(src=app.get_asset_url('DELVE Logo Black.png')),
         ],
     )
 
