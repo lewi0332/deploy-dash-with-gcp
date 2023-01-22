@@ -86,7 +86,7 @@ app.layout = html.Div(children=[
                 {'x': data_df.index.values.tolist(), 'y': data_df['multiply_num'], 'type': 'bar', 'name': 'Multiply Numbers'},
             ],
             'layout': {
-                'title': 'Dash Data Visualization'
+                'title': 'Dash Data viz'
             }
         }
     )
