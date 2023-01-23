@@ -294,3 +294,4 @@ if __name__ == '__main__':
 
 - v.1 of this blog post used a `flex` environment in the `app.yaml` file. However, this was causing the application to continuously run on GCP, causing increased costs.
 - v.2 is the current blog post, which uses a `standard` environment.
+test
