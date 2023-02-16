@@ -295,3 +295,8 @@ if __name__ == '__main__':
 - v.1 of this blog post used a `flex` environment in the `app.yaml` file. However, this was causing the application to continuously run on GCP, causing increased costs.
 - v.2 is the current blog post, which uses a `standard` environment.
 test
+
+
+https://stackoverflow.com/questions/64236468/cloud-build-fails-to-deploy-to-google-app-engine-you-do-not-have-permission-to
+
+https://cloud.google.com/source-repositories/docs/automate-app-engine-deployments-cloud-build
