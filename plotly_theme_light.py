@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import plotly.io as pio
 
-pio.templates["plotly_light"] = go.layout.Template(layout=go.Layout({
+plotly_light = go.layout.Template(layout=go.Layout({
     'annotationdefaults': {
         'arrowcolor': '#f2f5fa',
         'arrowhead': 0,
@@ -186,4 +186,4 @@ pio.templates["plotly_light"] = go.layout.Template(layout=go.Layout({
     }]
 }))
 
-pio.templates.default = "plotly_light"
+# pio.templates.default = "plotly_light"
