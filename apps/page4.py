@@ -1,36 +1,26 @@
 """
-This module contains the code for the Optimize page of the Dash app.
-
-The Optimize page allows the user to enter a proposed budget and 
-see how that budget might effect sales. Then can create an optimized
-budget based on the model's predictions.
 
 Author: Derrick Lewis
 """
-import os
-
-import dash_bootstrap_components as dbc
-import numpy as np
-import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pio
-from dash import dash_table, dcc, html
-from dash.dependencies import Input, Output, State
+import dash_bootstrap_components as dbc
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import dash_ag_grid as dag
+from google.cloud import bigquery
 from dotenv import load_dotenv
-from plotly.subplots import make_subplots
+from apps.tables import time_columnDefs, defaultColDef
 
 from plotly_theme_light import plotly_light
-
-from apps.tables import (df_col_data_cond, opt_channel_col,
-                         opt_channel_col_cond, tooltip_data_list)
 from main import app
 
 pio.templates["plotly_light"] = plotly_light
 pio.templates.default = "plotly_light"
 load_dotenv()
 
+client = bigquery.Client(project='dashapp-375513')
 
-FOLDER = os.environ.get('FOLDER')
 
 
 # Table settings
@@ -46,8 +36,17 @@ FONTSIZE = 12
 
 
 # Build some function, perhaps load data from a database or file
-
-
+def load_time_data()->dict:
+    query = """
+    SELECT
+        time_period,
+        most_common_crime_type,
+        overall_arrest_rate,
+    FROM
+        `dashapp-375513.Q4_crimes_by_time_period.crime_by_time_period`
+    """
+    dff = client.query(query).to_dataframe()
+    return dff.to_dict('records')
 
 
 # ---------------------------------------------------------------------
@@ -61,29 +60,152 @@ layout = dbc.Container([
                 dcc.Markdown(id='intro',
                 children = """
                 ---
-                # Markdown Area
+                # Common Crimes by Time Period
                 ---
                 
-                Inseert some markdown here to explain the page.
-    
+                Which crime is the most common between?
+                - 12am-6am cst
+                - 6am-12pm cst
+                - 12pm-6pm cst
+                - 6pm-12pm cst
                 
+                What is the arrest rate for each period?
+
+                ### Query to build this Dataset
+    
                 ---
                 """,
                 className='md')
             ])
     ]),
+    dbc.Row(
+        dbc.Col(
+                dcc.Markdown(id='codeblock',
+                children = """
+                ```sql
+                CREATE SCHEMA `dashapp-375513.Q4_crimes_by_time_period`
+                OPTIONS (
+                    description = "Which crime is the most common between 12am-6am cst 6am-12pm cst, 12pm-6pm cst and 6pm-12pm cst and what is the arrest rate for each period?",
+                    location = 'us');
+                CREATE OR REPLACE TABLE `dashapp-375513.Q4_crimes_by_time_period.crime_by_time_period` AS (
+                WITH
+                CTE AS (
+                    WITH RAW AS (
+                        SELECT
+                            unique_key,
+                            DATETIME(date, "America/Chicago") datetime_cst,
+                            extract(hour from DATETIME(date, "America/Chicago")) as hour,
+                            CASE 
+                            WHEN extract(hour from DATETIME(date, "America/Chicago")) >= 18 THEN '6pm-12pm'
+                            WHEN extract(hour from DATETIME(date, "America/Chicago")) >= 12 THEN '12pm-6pm'
+                            WHEN extract(hour from DATETIME(date, "America/Chicago")) >= 6 THEN '6am-12pm'
+                            WHEN extract(hour from DATETIME(date, "America/Chicago")) >= 0 THEN '12am-6am'
+                            END AS time_period,
+                            primary_type,
+                            arrest,
+                            ROW_NUMBER () OVER (PARTITION By case_number ORDER BY updated_on DESC) RN
+                        FROM 
+                            `bigquery-public-data.chicago_crime.crime`
+                    )
+                    SELECT
+                        unique_key,
+                        datetime_cst,
+                        hour,
+                        time_period,
+                        primary_type,
+                        arrest
+                    FROM RAW
+                    WHERE RN=1
+                ),
+                COUNT_CRIMES AS (
+                    SELECT
+                        primary_type,
+                        time_period,
+                        count(unique_key) as cnt_of_crimes
+                    FROM CTE
+                    GROUP BY 1, 2
+                ),
+                RANKED_CRIMES AS (
+                    SELECT
+                        primary_type,
+                        time_period,
+                        cnt_of_crimes,
+                        RANK() OVER(PARTITION BY time_period ORDER BY cnt_of_crimes DESC) AS RC
+                    FROM COUNT_CRIMES
+                ),
+                CRIMES AS (
+                    SELECT 
+                        time_period,
+                        primary_type AS most_common_crime_type
+                    FROM RANKED_CRIMES
+                    WHERE RC = 1
+                    ORDER BY 1
+                ),
+                ARREST_RATE AS (
+                    SELECT
+                        time_period,
+                        CASE 
+                        WHEN SUM(CAST(arrest AS INT)) = 0 THEN 0 
+                        ELSE SAFE_DIVIDE(SUM(CAST(arrest AS INT)), COUNT(CAST(arrest AS INT)))
+                        END AS overall_arrest_rate
+                    FROM 
+                        CTE
+                    GROUP BY 1
+                    )
+
+                SELECT
+                    c.time_period,
+                    c.most_common_crime_type,
+                    ar.overall_arrest_rate
+                FROM CRIMES as c
+                LEFT JOIN ARREST_RATE ar
+                    ON c.time_period = ar.time_period
+                ORDER BY 1
+                );
+                ```
+                """,
+                
+                className='md')
+            ),
+        style={"maxHeight": "400px", "overflow": "scroll"}
+    ),
     html.Br(),
     dbc.Row([
         dbc.Col(
+            dcc.Markdown(
+                children = """
+                ---
+                ### Top Crimes by Time Period
+                """,
+                className='md'),
+        width=5),
+        dbc.Col(width=1)
+    ]),
+    dbc.Row([
+        dbc.Col(
             [
+            html.Br(),
+            dag.AgGrid(
+                id="datatable-time",
+                rowData=load_time_data(),
+                className="ag-theme-material",
+                columnDefs=time_columnDefs,
+                columnSize="sizeToFit",
+                defaultColDef=defaultColDef,
+                dashGridOptions={"undoRedoCellEditing": True, 
+                "cellSelection": "single",
+                "rowSelection": "single"},
+                csvExportParams={"fileName": "top02_arrest_rate.csv", "columnSeparator": ","},
+                style = {'width': '100%', 'color': 'grey'}
+                ),
             dbc.Button(
-                'Calculate Proposed Budget', id='submit-prop', n_clicks=0,
+                'Download', id='downloadTime', n_clicks=0,
                 style={
                            'background-color': 'rgba(0, 203, 166, 0.7)',
                            'border': 'none',
                            'color': 'white',
-                           'padding': '15px',
-                           'margin-top': '5px',
+                           'padding': '8px',
+                           'margin-top': '10px',
                            'margin-bottom': '10px',
                            'text-align': 'center',
                            'text-decoration': 'none',
@@ -91,10 +213,11 @@ layout = dbc.Container([
                            'border-radius': '26px'
                        }
                     ),
-            ])
+            ]
+            )
     ]),
     html.Br(),
-    dcc.Graph(id='graph-main3'),
+    dcc.Graph(id='graph-main1'),
     
 ]
 )
@@ -104,10 +227,12 @@ layout = dbc.Container([
 # ---------------------------------------------------------------------
 
 @app.callback(
-    [Output('graph-main3', 'figure')],
-    [Input('submit-prop', 'n_clicks')])
-def update_prop_chart(n_clicks, budget_data):
-    if n_clicks == 0:
-        return go.Figure()
+    Output('datatable-time', 'exportDataAsCsv'),
+    [Input('downloadTime', 'n_clicks')],
+    prevent_initial_call=True,
+    )
+def update_prop_chart(n_clicks):
+    if n_clicks:
+        return True
     else:
-        return go.Figure()
+        return False

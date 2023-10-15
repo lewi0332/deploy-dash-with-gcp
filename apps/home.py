@@ -93,7 +93,7 @@ layout = dbc.Container([
                                     # Question  - 2
                                     ---
                                             
-                                    What are the top 5 primary crime types in 2020 by comminity area?
+                                    What are the top 5 primary crime types in 2020 by comminity area? How many of the same crims happened in Jan. 2021?
                                     """,
                                     style={
                                         'font-family': 'plain',
@@ -152,6 +152,7 @@ layout = dbc.Container([
                                 'font-weight': 'light'
                                 }
                             ),
+                            html.Br(),
                             dbc.Button(
                                 'View Page', 
                                 href='/Q3',
@@ -185,7 +186,7 @@ layout = dbc.Container([
                                 # Question - 4
                                 ---
 
-                                Which crime is the most common between 12am-6am cst 6am-12pm cst, 12pm-6pm cst and 6pm-12pm cst and what is the arrest rate for each period?
+                                Which crime is the most common by time period and what is the arrest rate for each period?
                                 """,
                                     style={
                                         'font-family': 'plain',

@@ -15,7 +15,7 @@ import dash_bootstrap_components as dbc
 from apps import page3
 from plotly_theme_light import plotly_light
 from main import server, app
-from apps import home, page1, page2, page3
+from apps import home, page1, page2, page3, page4
 
 pio.templates["plotly_light"] = plotly_light
 pio.templates.default = "plotly_light"
@@ -139,7 +139,7 @@ app.layout = html.Div([
     html.Div(
         [
             dcc.Markdown(f"""
-                        Model Updated on
+                        Updated on
                         """,
                              style={
                                  'font-family': 'plain',

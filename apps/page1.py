@@ -1,9 +1,5 @@
 """
-This module contains the code for the Optimize page of the Dash app.
 
-The Optimize page allows the user to enter a proposed budget and 
-see how that budget might effect sales. Then can create an optimized
-budget based on the model's predictions.
 
 Author: Derrick Lewis
 """
@@ -16,11 +12,7 @@ import dash_ag_grid as dag
 from google.cloud import bigquery
 from dotenv import load_dotenv
 from apps.tables import BOTTOMcolumnDefs, TOPcolumnDefs, defaultColDef
-
 from plotly_theme_light import plotly_light
-
-from apps.tables import (df_col_data_cond, opt_channel_col,
-                         opt_channel_col_cond, tooltip_data_list)
 from main import app
 
 pio.templates["plotly_light"] = plotly_light
@@ -82,10 +74,12 @@ layout = dbc.Container([
                 dcc.Markdown(id='intro',
                 children = """
                 ---
-                # Markdown Area
+                # Arrest Rates for Residence Crime
                 ---
                 
-                Insert some markdown here to explain the page.
+                Which beats are in the top and bottom 2% for arrest rate for residence crime in each district in 2020?
+
+                ### Query to build this Dataset
     
                 ---
                 """,
@@ -215,7 +209,7 @@ layout = dbc.Container([
             [
             html.Br(),
             dag.AgGrid(
-                id="datatable-main",
+                id="datatable-top",
                 rowData=load_top_data(),
                 className="ag-theme-material",
                 columnDefs=TOPcolumnDefs,
@@ -228,13 +222,13 @@ layout = dbc.Container([
                 style = {'height': '800px', 'width': '100%', 'color': 'grey'}
                 ),
             dbc.Button(
-                'Download', id='submit-prop', n_clicks=0,
+                'Download', id='downloadTop', n_clicks=0,
                 style={
                            'background-color': 'rgba(0, 203, 166, 0.7)',
                            'border': 'none',
                            'color': 'white',
-                           'padding': '15px',
-                           'margin-top': '5px',
+                           'padding': '8px',
+                           'margin-top': '10px',
                            'margin-bottom': '10px',
                            'text-align': 'center',
                            'text-decoration': 'none',
@@ -251,7 +245,7 @@ layout = dbc.Container([
             [
             html.Br(),
             dag.AgGrid(
-                id="datatable-main",
+                id="datatable-bottom",
                 rowData=load_bottom_data(),
                 className="ag-theme-material",
                 columnDefs=BOTTOMcolumnDefs,
@@ -260,17 +254,17 @@ layout = dbc.Container([
                 dashGridOptions={"undoRedoCellEditing": True,
                 "cellSelection": "single",
                 "rowSelection": "single"},
-                csvExportParams={"fileName": "top02_arrest_rate.csv", "columnSeparator": ","},
+                csvExportParams={"fileName": "bottom02_arrest_rate.csv", "columnSeparator": ","},
                 style = {'height': '800px', 'width': '100%', 'color': 'grey'}
                 ),
             dbc.Button(
-                'Download', id='submit-prop', n_clicks=0,
+                'Download', id='downloadBottom', n_clicks=0,
                 style={
 
                            'background-color': 'rgba(0, 203, 166, 0.7)',
                            'border': 'none',
                            'color': 'white',
-                           'padding': '15px',
+                           'padding': '8px',
                            'margin-top': '5px',
                            'margin-bottom': '10px',
                            'text-align': 'center',
@@ -294,11 +288,22 @@ layout = dbc.Container([
 # ---------------------------------------------------------------------
 
 @app.callback(
-    Output('datatable-main', 'exportDataAsCsv'),
-    [Input('submit-prop', 'n_clicks')],
+    Output('datatable-top', 'exportDataAsCsv'),
+    [Input('downloadTop', 'n_clicks')],
     prevent_initial_call=True,
     )
-def update_prop_chart(n_clicks):
+def downloadTop(n_clicks):
+    if n_clicks:
+        return True
+    else:
+        return False
+    
+@app.callback(
+    Output('datatable-bottom', 'exportDataAsCsv'),
+    [Input('downloadBottom', 'n_clicks')],
+    prevent_initial_call=True,
+    )
+def downloadBottom(n_clicks):
     if n_clicks:
         return True
     else:
