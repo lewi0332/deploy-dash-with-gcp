@@ -1,5 +1,27 @@
 from dash.dash_table import FormatTemplate as FormatTemplate
 
+
+TOPcolumnDefs = [
+    {'headerName': 'district', 'field': 'district', "filter": 'agTextColumnFilter'}, #'selectable': False, 'hideable': False, 'type': 'text',},
+    {'headerName': 'Beat', 'field': 'TOP_02_beat', }, #'selectable': True, 'hideable': False, 'overflow': 'hidden'},
+    {'headerName': 'Top 2% Arrest Rate', 'field': 'TOP_02_arrest_rate', "valueFormatter": {"function": "d3.format('(.2%')(params.value)"} }
+ ]
+
+BOTTOMcolumnDefs = [
+    {'headerName': 'district', 'field': 'district', "filter": 'agTextColumnFilter'}, #'selectable': False, 'hideable': False, 'type': 'text',},
+    {'headerName': 'Beat', 'field': 'BOTTOM_02_beat', }, #'selectable': True, 'hideable': False, 'overflow': 'hidden'},
+    {'headerName': 'Bottom 2% Arrest Rate', 'field': 'BOTTOM_02_arrest_rate', "valueFormatter": {"function": "d3.format('(.2%')(params.value)"} }
+ ]
+defaultColDef = {
+#  "filter": "agNumberColumnFilter",
+"enableCellTxtSelection": True,
+"ensureDomOrder": True,
+ "resizable": True,
+ "sortable": True,
+ "editable": False,
+ "floatingFilter": True,
+}
+
 opt_channel_col = [
     {'name': '', 'id': 'index', 'selectable': False, 'hideable': False, 'type': 'text',},
     {'name': 'Television', 'id': 'tv_S', 'selectable': False, 'hideable': False, 'type': 'numeric', 'format': {'specifier': ','}},

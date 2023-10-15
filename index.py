@@ -22,21 +22,17 @@ pio.templates.default = "plotly_light"
 load_dotenv()
 
 
-FOLDER = os.environ.get('FOLDER')
-
-COMPANY_LOGO ="DELVE Logo Black.png"
+COMPANY_LOGO ="DATALOGO.jpg"
 
 # building the navigation bar
 # https://github.com/facultyai/dash-bootstrap-components/blob/master/examples/advanced-component-usage/Navbars.py
 dropdown_disc = dbc.DropdownMenu(
     children=[
         dbc.DropdownMenuItem("Home", href="/home"),
-        dbc.DropdownMenuItem("Page3", href="/page1"),
-        dbc.DropdownMenuItem("Page3", href="/page2"),
-        dbc.DropdownMenuItem("Page2", href="/page3"),
-        dbc.DropdownMenuItem("Individual Channel Behavior", href="/channel_behavior"),
-        dbc.DropdownMenuItem("Optimization", href="/optimize"),
-        dbc.DropdownMenuItem("Detailed Model Validation", href="/features_detail"),
+        dbc.DropdownMenuItem("Question 1", href="/Q1"),
+        dbc.DropdownMenuItem("Question 2", href="/Q2"),
+        dbc.DropdownMenuItem("Question 3", href="/Q3"),
+        dbc.DropdownMenuItem("Question 4", href="/Q4")
     ],
     nav=True,
     in_navbar=True,
@@ -53,7 +49,7 @@ navbar = dbc.Navbar(
                         html.Img(src=app.get_asset_url(COMPANY_LOGO), height="50px"),
                          ),
                     dbc.Col(
-                        dbc.NavbarBrand("Marketing Mix Model",
+                        dbc.NavbarBrand("Chicago Crime Statistics",
                             style={
                             # 'font-family': 'plain',
                             'color': 'grey',
@@ -143,7 +139,7 @@ app.layout = html.Div([
     html.Div(
         [
             dcc.Markdown(f"""
-                        Model Updated on {FOLDER}
+                        Model Updated on
                         """,
                              style={
                                  'font-family': 'plain',
@@ -172,12 +168,14 @@ def display_page(pathname):
         return home.layout
     elif pathname == '/home':
         return home.layout
-    elif pathname == '/page1':
+    elif pathname == '/Q1':
         return page1.layout
-    elif pathname == '/page2':
+    elif pathname == '/Q2':
         return page2.layout
-    elif pathname == '/page3':
+    elif pathname == '/Q3':
         return page3.layout
+    elif pathname == '/Q4':
+        return page4.layout
     else:
         return '404'
 

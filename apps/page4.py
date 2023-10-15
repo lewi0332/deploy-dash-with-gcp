@@ -30,6 +30,8 @@ pio.templates.default = "plotly_light"
 load_dotenv()
 
 
+FOLDER = os.environ.get('FOLDER')
+
 
 # Table settings
 CELL_PADDING = 5
@@ -92,7 +94,7 @@ layout = dbc.Container([
             ])
     ]),
     html.Br(),
-    dcc.Graph(id='graph-main2'),
+    dcc.Graph(id='graph-main3'),
     
 ]
 )
@@ -102,7 +104,7 @@ layout = dbc.Container([
 # ---------------------------------------------------------------------
 
 @app.callback(
-    [Output('graph-main2', 'figure')],
+    [Output('graph-main3', 'figure')],
     [Input('submit-prop', 'n_clicks')])
 def update_prop_chart(n_clicks, budget_data):
     if n_clicks == 0:

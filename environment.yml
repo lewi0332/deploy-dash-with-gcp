@@ -1,0 +1,22 @@
+name: dash
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - dash
+  - dash-bootstrap-components
+  - dash-html-components
+  - dash-table
+  - Flask
+  - gunicorn
+  - itsdangerous
+  - Jinja2
+  - plotly
+  - numpy
+  - pandas
+  - Werkzeug
+  - pip
+  - python-dotenv
+  - google-cloud-bigquery
+  - pip:
+      - dash-ag-grid
