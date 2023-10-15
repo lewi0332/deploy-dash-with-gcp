@@ -66,9 +66,9 @@ layout = dbc.Container([
                 
                 What street in each ward had the most domestic crimes in 2020?What street in each ward had the most domestic crimes in 2020?
 
-                ### Query to build this Dataset
-    
                 ---
+
+                ### Query to Build this Dataset
                 """,
                 className='md')
             ])

@@ -71,9 +71,9 @@ layout = dbc.Container([
                 
                 What is the arrest rate for each period?
 
-                ### Query to build this Dataset
-    
                 ---
+
+                ### Query to build this Dataset
                 """,
                 className='md')
             ])

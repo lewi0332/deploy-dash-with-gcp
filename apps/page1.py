@@ -78,10 +78,10 @@ layout = dbc.Container([
                 ---
                 
                 Which beats are in the top and bottom 2% for arrest rate for residence crime in each district in 2020?
-
-                ### Query to build this Dataset
     
                 ---
+
+                ### Query to build this Dataset
                 """,
                 className='md')
             ])
