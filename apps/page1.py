@@ -3,6 +3,8 @@
 
 Author: Derrick Lewis
 """
+import json
+import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pio
 import dash_bootstrap_components as dbc
@@ -21,7 +23,9 @@ load_dotenv()
 
 client = bigquery.Client(project='dashapp-375513')
 
-
+# Load custom GeoJSON file
+with open('police_beats.geojson', mode='r', encoding='utf-8') as f:
+    geojson_data = json.load(f)
 
 # Table settings
 CELL_PADDING = 5
@@ -193,16 +197,7 @@ layout = dbc.Container([
                 ### Top 2% Arrest Rate by District
                 """,
                 className='md'),
-        width=5),
-        dbc.Col(width=1),
-        dbc.Col(
-            dcc.Markdown(id='intro',
-                children = """
-                ---
-                ### Bottom 2% Arrest Rate by District
-                """,
-                className='md')
-        ),
+        width=5)
     ]),
     dbc.Row([
         dbc.Col(
@@ -237,12 +232,25 @@ layout = dbc.Container([
                        }
                     ),
             ]
-            ),
+        ),
         dbc.Col(width=1),
+        dbc.Col(dcc.Graph(id='graph-main1'), width=6)
+    ]),
+    html.Br(),
+    dbc.Row([
+        dbc.Col(
+            dcc.Markdown(id='intro',
+                children = """
+                ---
+                ### Bottom 2% Arrest Rate by District
+                """,
+                className='md')
+        ),
+    ]),
+    dbc.Row([
         dbc.Col(
             [
-            dbc.Col(
-            [
+            
             html.Br(),
             dag.AgGrid(
                 id="datatable-bottom",
@@ -274,11 +282,11 @@ layout = dbc.Container([
                        }
                     ),
             ]
-            )
-            ])
-                ]),
-    html.Br(),
-    dcc.Graph(id='graph-main1'),
+        ),
+        dbc.Col(width=1),
+        dbc.Col(dcc.Graph(id='graph-main2'),
+                width=6)
+        ]),
     
 ]
 )
@@ -308,3 +316,92 @@ def downloadBottom(n_clicks):
         return True
     else:
         return False
+    
+@app.callback(
+    Output('graph-main1', 'figure'),
+    [Input('datatable-top', 'rowData'),
+    Input('datatable-top', 'cellClicked')],
+    # prevent_initial_call=True,
+    )
+def update_figure(rowData, selectedRows):
+    if selectedRows is None:
+        markerlist = [.5] * len(rowData)
+    else:
+        markerlist = [.1] * len(rowData)
+        markerlist[selectedRows['rowIndex']] = .5
+    dff = pd.DataFrame(rowData)
+    # Create choropleth map
+    fig = go.Figure(
+        go.Choroplethmapbox(
+            geojson=geojson_data,
+            featureidkey='properties.beat_num',
+            locations=dff['TOP_02_beat'].astype(str).str.zfill(4),
+            z=dff['TOP_02_arrest_rate'],
+            colorscale='Viridis',
+            zmin=0,
+            zmax=.4,
+            marker_opacity=markerlist,
+            marker_line_width=.1,
+            text=dff['district'].astype(str),
+            hovertemplate =
+                "District: <b>%{text} </b><br>" +
+                "Beat: <b>%{location} </b><br>" +
+                "Arrest Rate: <b>%{z:.2%} </b><br><extra></extra>" 
+        )
+    )
+
+    # Set map layout
+    fig.update_layout(
+        mapbox_style='carto-positron',
+        mapbox_zoom=9.7,
+        mapbox_center={'lat': 41.86, 'lon': -87.69
+    },
+    height=900,
+    width=800
+    )
+    return fig
+
+@app.callback(
+    Output('graph-main2', 'figure'),
+    [Input('datatable-bottom', 'rowData'),
+    Input('datatable-bottom', 'cellClicked')],
+    # prevent_initial_call=True,
+    )
+def update_figure(rowData, selectedRows):
+    print(selectedRows)
+    if selectedRows is None:
+        markerlist = [.5] * len(rowData)
+    else:
+        markerlist = [.1] * len(rowData)
+        markerlist[selectedRows['rowIndex']] = .5
+    dff = pd.DataFrame(rowData)
+    # Create choropleth map
+    fig = go.Figure(
+        go.Choroplethmapbox(
+            geojson=geojson_data,
+            featureidkey='properties.beat_num',
+            locations=dff['BOTTOM_02_beat'].astype(str).str.zfill(4),
+            z=dff['BOTTOM_02_arrest_rate'],
+            colorscale='Viridis',
+            zmin=0,
+            zmax=.4,
+            marker_opacity=markerlist,
+            marker_line_width=markerlist,
+            text=dff['district'].astype(str),
+            hovertemplate =
+                "District: <b>%{text} </b><br>" +
+                "Beat: <b>%{location} </b><br>" +
+                "Arrest Rate: <b>%{z:.2%} </b><br><extra></extra>" 
+        )
+    )
+
+    # Set map layout
+    fig.update_layout(
+        mapbox_style='carto-positron',
+        mapbox_zoom=9.7,
+        mapbox_center={'lat': 41.86, 'lon': -87.69
+    },
+    height=900,
+    width=800
+    )
+    return fig
